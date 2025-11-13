@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 // Import all product images
@@ -90,7 +91,52 @@ const products: Product[] = [
 const categories: Category[] = ["All", "Earrings", "Necklaces", "Bracelets", "Rings", "Anklets", "Jewelry Sets"];
 
 const Products = () => {
-  const [selectedCategory, setSelectedCategory] = useState<Category>("All");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryCategory = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const categoryParam = params.get("category");
+    if (!categoryParam) return undefined;
+    const normalized = categoryParam.replace(/\+/g, " ");
+    const match = categories.find((cat) => cat.toLowerCase() === normalized.toLowerCase());
+    return match;
+  }, [location.search]);
+
+  const [selectedCategory, setSelectedCategory] = useState<Category>(queryCategory ?? "All");
+  const gridRef = useRef<HTMLDivElement>(null);
+  const hasScrolledForQueryRef = useRef(false);
+
+  const scrollToGrid = () => {
+    if (!gridRef.current) return;
+    const rect = gridRef.current.getBoundingClientRect();
+    const offset = window.pageYOffset + rect.top - 160;
+    window.scrollTo({ top: Math.max(offset, 0), behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (queryCategory && queryCategory !== selectedCategory) {
+      setSelectedCategory(queryCategory);
+      if (!hasScrolledForQueryRef.current) {
+        requestAnimationFrame(() => scrollToGrid());
+        hasScrolledForQueryRef.current = true;
+      }
+    }
+    if (!queryCategory && selectedCategory !== "All") {
+      setSelectedCategory("All");
+    }
+  }, [queryCategory, selectedCategory]);
+
+  const updateCategory = (category: Category) => {
+    setSelectedCategory(category);
+    const params = new URLSearchParams(location.search);
+    if (category === "All") {
+      params.delete("category");
+    } else {
+      params.set("category", category);
+    }
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+    requestAnimationFrame(() => scrollToGrid());
+  };
 
   const filteredProducts =
     selectedCategory === "All"
@@ -101,7 +147,7 @@ const Products = () => {
     const message = encodeURIComponent(
       `Hi, I'd like to order the ${productName} from Lumi & Co.`
     );
-    window.open(`https://wa.me/919876543210?text=${message}`, "_blank");
+    window.open(`https://wa.me/919025421149?text=${message}`, "_blank");
   };
 
   return (
@@ -127,7 +173,7 @@ const Products = () => {
                 <Button
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => updateCategory(category)}
                   className={
                     selectedCategory === category
                     ? "bg-gradient-rose hover:shadow-glow transition-all duration-500 whitespace-nowrap"
@@ -151,7 +197,7 @@ const Products = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredProducts.map((product, index) => (
               <div
                 key={product.id}

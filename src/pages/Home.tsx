@@ -1,5 +1,7 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import heroImage from "@/assets/hero-jewelry.jpg";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
@@ -9,27 +11,73 @@ import product5 from "@/assets/product-5.jpg";
 import product6 from "@/assets/product-6.jpg";
 import { Sparkles, ShieldCheck, Leaf } from "lucide-react";
 
-const products = [
-  { id: 1, name: "Celestial Pendant", price: "₹4,999", image: product1 },
-  { id: 2, name: "Aurora Hoops", price: "₹3,799", image: product2 },
-  { id: 3, name: "Whisper Bracelet", price: "₹3,299", image: product3 },
-  { id: 4, name: "Pearl Grace Ring", price: "₹2,999", image: product4 },
-  { id: 5, name: "Layered Elegance", price: "₹5,499", image: product5 },
-  { id: 6, name: "Crystal Studs", price: "₹2,499", image: product6 },
+type FeaturedProduct = {
+  id: number;
+  name: string;
+  price: string;
+  image: string;
+  category: string;
+};
+
+const products: FeaturedProduct[] = [
+  { id: 1, name: "Celestial Pendant", price: "₹4,999", image: product1, category: "Necklaces" },
+  { id: 2, name: "Aurora Hoops", price: "₹3,799", image: product2, category: "Earrings" },
+  { id: 3, name: "Whisper Bracelet", price: "₹3,299", image: product3, category: "Bracelets" },
+  { id: 4, name: "Pearl Grace Ring", price: "₹2,999", image: product4, category: "Rings" },
+  { id: 5, name: "Layered Elegance", price: "₹5,499", image: product5, category: "Jewelry Sets" },
+  { id: 6, name: "Crystal Studs", price: "₹2,499", image: product6, category: "Earrings" },
 ];
 
 const Home = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const state = location.state as { scrollToHero?: boolean } | null;
+    if (state?.scrollToHero) {
+      document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+      navigate(location.pathname, { replace: true, state: { ...state, scrollToHero: false } });
+    }
+  }, [location.state, location.pathname, navigate]);
+
   const handleAddToCart = (productName: string) => {
     const message = encodeURIComponent(
       `Hi, I'd like to order ${productName} from Lumi & Co.`
     );
-    window.open(`https://wa.me/919876543210?text=${message}`, "_blank");
+    window.open(`https://wa.me/919025421149?text=${message}`, "_blank");
+  };
+
+  const handleNewsletterSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!email.trim()) {
+      toast({
+        title: "Email required",
+        description: "Please enter your email to subscribe.",
+      });
+      return;
+    }
+
+    toast({
+      title: "Subscription confirmed",
+      description: "You're on the list for Lumi exclusives!",
+    });
+
+    setEmail("");
+  };
+
+  const handleProductNavigation = (category: string) => {
+    navigate(`/products?category=${encodeURIComponent(category)}`);
   };
 
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen md:h-screen flex items-center justify-center overflow-hidden pt-32 pb-16 md:pt-0 md:pb-0">
+      <section
+        id="hero"
+        className="relative min-h-screen md:h-screen flex items-center justify-center overflow-hidden pt-32 pb-16 md:pt-0 md:pb-0"
+      >
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
@@ -48,12 +96,12 @@ const Home = () => {
             Each Lumi signature is designed to move with you, elevating every moment with effortless luxury.
           </p>
           <Button
+            asChild
             variant="default"
-            size="sm"
-            className="bg-gradient-rose hover:shadow-glow transition-all duration-500 rounded-full px-6 md:px-8"
-            onClick={() => document.getElementById("collection")?.scrollIntoView({ behavior: "smooth" })}
+            size="default"
+            className="bg-gradient-rose hover:shadow-glow transition-all duration-500 rounded-full px-8 md:px-10"
           >
-            Explore Collection
+            <Link to="/products">Explore Collection</Link>
           </Button>
         </div>
       </section>
@@ -73,8 +121,17 @@ const Home = () => {
               {products.map((product, index) => (
                 <div
                   key={product.id}
-                  className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-glow hover-lift transition-all duration-500 animate-fade-in"
+                  className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-glow hover-lift transition-all duration-500 animate-fade-in cursor-pointer"
                   style={{ animationDelay: `${index * 100}ms` }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleProductNavigation(product.category)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      handleProductNavigation(product.category);
+                    }
+                  }}
                 >
                   <div className="aspect-square overflow-hidden">
                     <img
@@ -93,7 +150,10 @@ const Home = () => {
                     <Button
                       variant="outline"
                       className="w-full border-primary text-primary hover:bg-gradient-rose hover:text-primary-foreground hover:border-transparent transition-all duration-300"
-                      onClick={() => handleAddToCart(product.name)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleAddToCart(product.name);
+                      }}
                     >
                       Add to Cart
                     </Button>
@@ -179,14 +239,16 @@ const Home = () => {
         <div className="container mx-auto max-w-3xl text-center">
           <h3 className="font-cormorant text-2xl md:text-4xl mb-3 md:mb-4">Enter the Lumi inner circle</h3>
           <p className="text-muted-foreground text-sm md:text-base mb-5 md:mb-6">Receive private previews, curated styling notes, and invitations to limited releases.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-xl mx-auto">
+          <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-3 justify-center max-w-xl mx-auto">
             <input
               type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               placeholder="Enter your email"
               className="flex-1 min-w-0 rounded-full border bg-background px-5 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <Button className="rounded-full px-6 bg-gradient-rose text-primary-foreground hover:shadow-glow">Subscribe</Button>
-          </div>
+            <Button type="submit" className="rounded-full px-6 bg-gradient-rose text-primary-foreground hover:shadow-glow">Subscribe</Button>
+          </form>
         </div>
       </section>
     </main>

@@ -30,7 +30,7 @@ const Contact = () => {
     const message = encodeURIComponent(
       "Hi, I'd like to learn more about Lumi & Co. jewelry."
     );
-    window.open(`https://wa.me/919876543210?text=${message}`, "_blank");
+    window.open(`https://wa.me/919025421149?text=${message}`, "_blank");
   };
 
   return (
@@ -145,10 +145,10 @@ const Contact = () => {
                       Phone
                     </h3>
                     <a
-                      href="tel:+919876543210"
+                      href="tel:+919025421149"
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      +91 98765 43210
+                      +91 90254 21149
                     </a>
                   </div>
                 </div>

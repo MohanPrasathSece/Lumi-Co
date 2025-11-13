@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
@@ -24,9 +25,19 @@ const Navigation = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/50">
       <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center justify-between w-full md:w-auto gap-4">
-          <Link to="/" className="font-playfair text-xl md:text-2xl font-semibold text-gradient-rose">
+          <button
+            type="button"
+            onClick={() => {
+              if (location.pathname === "/") {
+                document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+              } else {
+                navigate("/", { state: { scrollToHero: true } });
+              }
+            }}
+            className="font-cormorant text-xl md:text-2xl font-semibold text-gradient-rose focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md"
+          >
             Lumi & Co.
-          </Link>
+          </button>
 
           <button
             type="button"
