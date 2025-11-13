@@ -56,7 +56,7 @@ const Contact = () => {
                 Send Us a Message
               </h2>
               
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/40 bg-white/80 backdrop-blur-sm p-6 shadow-soft transition-all duration-500 hover:-translate-y-1 hover:shadow-glow">
                 <div>
                   <Label htmlFor="name" className="text-foreground">
                     Name
@@ -116,7 +116,7 @@ const Contact = () => {
                 </Button>
               </form>
 
-              <div className="mt-8">
+              <div className="mt-6">
                 <Button
                   variant="outline"
                   className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
@@ -130,14 +130,14 @@ const Contact = () => {
             </div>
 
             {/* Contact Information */}
-            <div className="animate-fade-in" style={{ animationDelay: "100ms" }}>
+            <div className="animate-fade-in space-y-6" style={{ animationDelay: "100ms" }}>
               <h2 className="font-playfair text-3xl font-semibold mb-8">
                 Contact Information
               </h2>
 
-              <div className="space-y-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft">
+              <div className="space-y-6">
+                <div className="flex items-start gap-4 rounded-2xl border border-transparent bg-white/70 backdrop-blur-sm px-6 py-5 transition-all duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-soft">
+                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft transition-transform duration-500 hover:scale-110">
                     <Phone className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
@@ -153,8 +153,8 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft">
+                <div className="flex items-start gap-4 rounded-2xl border border-transparent bg-white/70 backdrop-blur-sm px-6 py-5 transition-all duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-soft">
+                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft transition-transform duration-500 hover:scale-110">
                     <Mail className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
@@ -170,8 +170,8 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft">
+                <div className="flex items-start gap-4 rounded-2xl border border-transparent bg-white/70 backdrop-blur-sm px-6 py-5 transition-all duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-soft">
+                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft transition-transform duration-500 hover:scale-110">
                     <MapPin className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
@@ -186,8 +186,8 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft">
+                <div className="flex items-start gap-4 rounded-2xl border border-transparent bg-white/70 backdrop-blur-sm px-6 py-5 transition-all duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-soft">
+                  <div className="w-12 h-12 bg-gradient-rose rounded-full flex items-center justify-center flex-shrink-0 shadow-soft transition-transform duration-500 hover:scale-110">
                     <Clock className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
@@ -203,7 +203,7 @@ const Contact = () => {
                 </div>
               </div>
 
-              <div className="mt-12 p-8 bg-gradient-champagne rounded-2xl shadow-soft">
+              <div className="mt-12 p-8 bg-gradient-champagne rounded-2xl shadow-soft transition-all duration-500 hover:-translate-y-1 hover:shadow-glow">
                 <h3 className="font-playfair text-2xl font-semibold mb-4 text-center">
                   Visit Our Showroom
                 </h3>

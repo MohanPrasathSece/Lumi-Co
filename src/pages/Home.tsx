@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/about-banner.jpg";
+import heroImage from "@/assets/hero-jewelry.jpg";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -33,16 +33,16 @@ const Home = () => {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/55 to-white/45" />
         </div>
         
         <div className="relative z-10 text-center px-4 animate-fade-in-slow">
-          <h1 className="font-cormorant text-5xl md:text-7xl font-bold mb-6 text-white">
+          <h1 className="font-cormorant text-5xl md:text-7xl font-bold mb-6 text-foreground">
             Radiance for the modern muse
             <br />
             <span className="text-gradient-rose">crafted to captivate</span>
           </h1>
-          <p className="text-lg md:text-xl text-white/85 max-w-2xl mx-auto mb-8">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Discover limited-edition adornments that balance sculptural lines with fluid femininity.
             Each Lumi signature is designed to move with you, elevating every moment with effortless luxury.
           </p>

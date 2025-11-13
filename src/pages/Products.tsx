@@ -105,9 +105,9 @@ const Products = () => {
   };
 
   return (
-    <main className="min-h-screen pt-20">
+    <main className="min-h-screen pt-16">
       {/* Header */}
-      <section className="py-16 px-4 bg-gradient-champagne">
+      <section className="py-12 px-4 bg-gradient-champagne">
         <div className="container mx-auto text-center animate-fade-in">
           <h1 className="font-playfair text-5xl md:text-6xl font-bold mb-6">
             Our <span className="text-gradient-rose">Collection</span>
@@ -119,31 +119,33 @@ const Products = () => {
       </section>
 
       {/* Category Filter */}
-      <section className="py-8 px-4 border-b border-border/50 sticky top-20 md:top-16 bg-background/95 backdrop-blur-sm z-40">
+      <section className="py-4 px-4 border-b border-border/50 sticky top-16 md:top-14 bg-background/95 backdrop-blur-sm z-40">
         <div className="container mx-auto">
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category)}
-                className={
-                  selectedCategory === category
-                    ? "bg-gradient-rose hover:shadow-glow transition-all duration-500"
-                    : "border-primary/30 text-foreground hover:border-primary hover:bg-accent transition-all duration-300"
-                }
-              >
-                {category}
-              </Button>
-            ))}
+          <div className="-mx-4 md:mx-0">
+            <div className="flex items-center gap-2 overflow-x-auto px-4 pb-2 md:pb-0 md:px-0 md:flex-wrap md:justify-center md:gap-3 scrollbar-thin">
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  onClick={() => setSelectedCategory(category)}
+                  className={
+                    selectedCategory === category
+                    ? "bg-gradient-rose hover:shadow-glow transition-all duration-500 whitespace-nowrap"
+                    : "border-primary/30 text-foreground hover:border-primary hover:bg-accent transition-all duration-300 whitespace-nowrap"
+                  }
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Products Grid */}
-      <section className="py-16 px-4">
+      <section className="py-10 px-4">
         <div className="container mx-auto">
-          <div className="mb-8 text-center">
+          <div className="mb-6 text-center">
             <p className="text-muted-foreground">
               Showing {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
             </p>
