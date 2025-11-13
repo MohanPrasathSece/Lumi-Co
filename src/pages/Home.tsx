@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-jewelry.jpg";
 import product1 from "@/assets/product-1.jpg";
@@ -28,7 +29,7 @@ const Home = () => {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] md:h-screen flex items-center justify-start md:justify-center overflow-hidden pt-24 pb-16 md:pt-0 md:pb-0">
+      <section className="relative min-h-screen md:h-screen flex items-center justify-center overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
@@ -36,7 +37,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/55 to-white/45" />
         </div>
         
-        <div className="relative z-10 text-center px-4 animate-fade-in-slow">
+        <div className="relative z-10 mt-16 md:mt-0 text-center px-4 animate-fade-in-slow">
           <h1 className="font-cormorant text-3xl sm:text-4xl md:text-7xl font-bold mb-5 md:mb-6 text-foreground">
             Radiance for the modern muse
             <br />
@@ -67,37 +68,45 @@ const Home = () => {
             <div className="w-24 h-1 bg-gradient-rose mx-auto rounded-full" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 max-w-6xl mx-auto">
-            {products.map((product, index) => (
-              <div
-                key={product.id}
-                className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-glow hover-lift transition-all duration-500 animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 max-w-6xl mx-auto">
+              {products.map((product, index) => (
+                <div
+                  key={product.id}
+                  className="group bg-card rounded-2xl overflow-hidden shadow-soft hover:shadow-glow hover-lift transition-all duration-500 animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="aspect-square overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  </div>
+                  <div className="p-4 md:p-6">
+                    <h3 className="font-cormorant text-base md:text-xl font-medium mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-primary text-sm md:text-lg font-medium mb-4">
+                      {product.price}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="w-full border-primary text-primary hover:bg-gradient-rose hover:text-primary-foreground hover:border-transparent transition-all duration-300"
+                      onClick={() => handleAddToCart(product.name)}
+                    >
+                      Add to Cart
+                    </Button>
+                  </div>
                 </div>
-                <div className="p-4 md:p-6">
-                  <h3 className="font-cormorant text-base md:text-xl font-medium mb-2">
-                    {product.name}
-                  </h3>
-                  <p className="text-primary text-sm md:text-lg font-medium mb-4">
-                    {product.price}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="w-full border-primary text-primary hover:bg-gradient-rose hover:text-primary-foreground hover:border-transparent transition-all duration-300"
-                    onClick={() => handleAddToCart(product.name)}
-                  >
-                    Add to Cart
-                  </Button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="flex justify-center">
+              <Button asChild variant="default" className="rounded-full px-6 bg-gradient-rose text-primary-foreground hover:shadow-glow">
+                <Link to="/products">View More</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
