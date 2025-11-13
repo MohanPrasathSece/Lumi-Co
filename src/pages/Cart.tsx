@@ -1,5 +1,12 @@
+import { useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/context/cart";
+import { openRazorpayCheckout } from "@/lib/razorpay";
+import { getApiUrl } from "@/lib/config";
+import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
 const formatter = new Intl.NumberFormat("en-IN", {
@@ -8,8 +15,43 @@ const formatter = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
 });
 
+type CustomerDetails = {
+  name: string;
+  email: string;
+  phone: string;
+};
+
+type ShippingAddress = {
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+};
+
+const createInitialCustomer = (): CustomerDetails => ({
+  name: "",
+  email: "",
+  phone: "",
+});
+
+const createInitialAddress = (): ShippingAddress => ({
+  line1: "",
+  line2: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  country: "India",
+});
+
 const Cart = () => {
   const { items, subtotal, totalQuantity, updateQuantity, removeItem, clearCart } = useCart();
+  const { toast } = useToast();
+  const [customer, setCustomer] = useState(createInitialCustomer());
+  const [address, setAddress] = useState(createInitialAddress());
+  const [notes, setNotes] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const hasItems = items.length > 0;
 
   const handleQuantityChange = (id: number | string, delta: number) => {
@@ -20,6 +62,167 @@ const Cart = () => {
   };
 
   const formattedSubtotal = formatter.format(subtotal);
+
+  const handleCustomerChange = <Field extends keyof CustomerDetails>(field: Field) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setCustomer((prev) => ({ ...prev, [field]: value }));
+    };
+
+  const handleAddressChange = <Field extends keyof ShippingAddress>(field: Field) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value;
+      setAddress((prev) => ({ ...prev, [field]: value }));
+    };
+
+  const handleNotesChange = (event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value);
+
+  const formatAddressForNotes = () => {
+    const parts = [
+      address.line1,
+      address.line2,
+      `${address.city}, ${address.state} ${address.postalCode}`.trim(),
+      address.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    return parts;
+  };
+
+  const handleCheckout = async () => {
+    if (!hasItems) {
+      toast({
+        title: "Your cart is empty",
+        description: "Add a few radiant pieces before checking out.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const requiredCustomerFields: { value: string; label: string }[] = [
+      { value: customer.name.trim(), label: "your full name" },
+      { value: customer.email.trim(), label: "your email" },
+      { value: customer.phone.trim(), label: "your phone number" },
+    ];
+
+    const missingCustomer = requiredCustomerFields.find((field) => !field.value);
+    if (missingCustomer) {
+      toast({
+        title: "Details required",
+        description: `Please provide ${missingCustomer.label} to continue.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const requiredAddressFields: { value: string; label: string }[] = [
+      { value: address.line1.trim(), label: "your address line 1" },
+      { value: address.city.trim(), label: "your city" },
+      { value: address.state.trim(), label: "your state" },
+      { value: address.postalCode.trim(), label: "your postal code" },
+      { value: address.country.trim(), label: "your country" },
+    ];
+
+    const missingAddress = requiredAddressFields.find((field) => !field.value);
+    if (missingAddress) {
+      toast({
+        title: "Address required",
+        description: `Please provide ${missingAddress.label} to continue.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+
+      const response = await fetch(`${getApiUrl()}/api/orders/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer,
+          shippingAddress: address,
+          items,
+          notes,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to create order. Please try again.");
+      }
+
+      const { razorpayKey, orderId, amount, currency } = data;
+      if (!razorpayKey || !orderId) {
+        throw new Error("Payment gateway is not configured correctly.");
+      }
+
+      const checkout = await openRazorpayCheckout({
+        key: razorpayKey,
+        amount,
+        currency,
+        name: "Lumi & Co.",
+        description: "Complete your luminous ensemble",
+        order_id: orderId,
+        handler: async (payment) => {
+          setIsProcessing(true);
+          try {
+            const verifyResponse = await fetch(`${getApiUrl()}/api/orders/verify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpayOrderId: payment.razorpay_order_id,
+                razorpayPaymentId: payment.razorpay_payment_id,
+                razorpaySignature: payment.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json().catch(() => ({}));
+            if (!verifyResponse.ok) {
+              throw new Error(verifyData.error || "Payment verification failed.");
+            }
+
+            toast({
+              title: "Payment successful",
+              description: "Thank you for choosing Lumi & Co. We'll send a confirmation email shortly.",
+            });
+            clearCart();
+            setCustomer(createInitialCustomer());
+            setAddress(createInitialAddress());
+            setNotes("");
+          } catch (error) {
+            const message = error instanceof Error ? error.message : "Unable to verify payment.";
+            toast({ title: "Verification error", description: message, variant: "destructive" });
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: customer.name,
+          email: customer.email,
+          contact: customer.phone,
+        },
+        notes: {
+          customerNotes: notes || "",
+          shippingAddress: formatAddressForNotes(),
+        },
+        theme: {
+          color: "#b83256",
+        },
+      });
+
+      (checkout as any)?.on?.("payment.failed", (event: any) => {
+        setIsProcessing(false);
+        const description = event?.error?.description || "Payment was not completed.";
+        toast({ title: "Payment failed", description, variant: "destructive" });
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to process checkout.";
+      toast({ title: "Checkout error", description: message, variant: "destructive" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <main className="min-h-screen pt-24 pb-16 bg-gradient-champagne/30">
@@ -133,17 +336,70 @@ const Cart = () => {
                 </div>
               </div>
 
+              <div className="space-y-4">
+                <h3 className="font-cormorant text-xl font-semibold">Delivery Details</h3>
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <Label htmlFor="cust-name">Full name</Label>
+                    <Input id="cust-name" autoComplete="name" value={customer.name} onChange={handleCustomerChange("name")} disabled={!hasItems || isProcessing} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="cust-email">Email</Label>
+                      <Input id="cust-email" type="email" autoComplete="email" value={customer.email} onChange={handleCustomerChange("email")} disabled={!hasItems || isProcessing} />
+                    </div>
+                    <div>
+                      <Label htmlFor="cust-phone">Phone</Label>
+                      <Input id="cust-phone" type="tel" autoComplete="tel" value={customer.phone} onChange={handleCustomerChange("phone")} disabled={!hasItems || isProcessing} />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="addr-line1">Address line 1</Label>
+                    <Input id="addr-line1" autoComplete="address-line1" value={address.line1} onChange={handleAddressChange("line1")} disabled={!hasItems || isProcessing} />
+                  </div>
+                  <div>
+                    <Label htmlFor="addr-line2">Address line 2 (optional)</Label>
+                    <Input id="addr-line2" autoComplete="address-line2" value={address.line2} onChange={handleAddressChange("line2")} disabled={!hasItems || isProcessing} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="addr-city">City</Label>
+                      <Input id="addr-city" autoComplete="address-level2" value={address.city} onChange={handleAddressChange("city")} disabled={!hasItems || isProcessing} />
+                    </div>
+                    <div>
+                      <Label htmlFor="addr-state">State</Label>
+                      <Input id="addr-state" autoComplete="address-level1" value={address.state} onChange={handleAddressChange("state")} disabled={!hasItems || isProcessing} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="addr-postal">Postal code</Label>
+                      <Input id="addr-postal" autoComplete="postal-code" value={address.postalCode} onChange={handleAddressChange("postalCode")} disabled={!hasItems || isProcessing} />
+                    </div>
+                    <div>
+                      <Label htmlFor="addr-country">Country</Label>
+                      <Input id="addr-country" value={address.country} onChange={handleAddressChange("country")} disabled={!hasItems || isProcessing} />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="order-notes">Notes (optional)</Label>
+                    <Textarea id="order-notes" value={notes} onChange={handleNotesChange} disabled={!hasItems || isProcessing} />
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <Button
                   className="w-full rounded-full bg-gradient-rose text-primary-foreground hover:shadow-glow"
-                  disabled={!hasItems}
+                  disabled={!hasItems || isProcessing}
+                  onClick={handleCheckout}
                 >
-                  Proceed to checkout
+                  {isProcessing ? "Processing..." : "Proceed to checkout"}
                 </Button>
                 <Button
                   variant="ghost"
                   className="w-full text-muted-foreground hover:text-primary"
-                  disabled={!hasItems}
+                  disabled
                 >
                   Checkout with WhatsApp
                 </Button>

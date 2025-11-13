@@ -175,7 +175,11 @@ const Home = () => {
             </div>
 
             <div className="flex justify-center">
-              <Button asChild variant="default" className="rounded-full px-6 bg-gradient-rose text-primary-foreground hover:shadow-glow">
+              <Button
+                asChild
+                variant="default"
+                className="rounded-full px-8 py-4 text-base sm:text-lg font-semibold bg-gradient-rose text-primary-foreground hover:shadow-glow hover:scale-[1.02] transition-transform"
+              >
                 <Link to="/products">View More</Link>
               </Button>
             </div>
