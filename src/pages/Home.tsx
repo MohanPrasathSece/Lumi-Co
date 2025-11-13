@@ -29,7 +29,7 @@ const Home = () => {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-screen md:h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen md:h-screen flex items-center justify-center overflow-hidden pt-32 pb-16 md:pt-0 md:pb-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
@@ -37,7 +37,7 @@ const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/55 to-white/45" />
         </div>
         
-        <div className="relative z-10 mt-16 md:mt-0 text-center px-4 animate-fade-in-slow">
+        <div className="relative z-10 text-center px-4 animate-fade-in-slow">
           <h1 className="font-cormorant text-3xl sm:text-4xl md:text-7xl font-bold mb-5 md:mb-6 text-foreground">
             Radiance for the modern muse
             <br />
